@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>o card</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+    <header>
+    <nav>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="AUCTION.HTML">Auction</a></li>
+    <li id="reports"><a href="REPORTS.HTML">Reports</a></li>
+    <li><a href="BIDDERS.HTML">Bidders</a></li>
+    
+    </nav>
+    
+    <div id="sign">
+    <a href="PROFILE.HTML"><div id="accountImage"><!-- profile image--> </div></a>
+    <button id="signIn"><a href="LOGIN.HTML">Sign In</a></button>
+    </div>    
+    </header>
+    
+    <div class="create-card-modal" id="card-creation">
+        
+        <h3>Dont have O_Card?</h3>
+        <button id="create">Create Card</button>
+    </div>
+    
+    <section id="mycardSection">
+    <div class="ocard-container">
+    <div class="flip-card" id="myCardCont">
+        <div class="ocard" id="back">
+            <h4>Card Number</h4>
+            <p id="card-number">000000</p>
+            <h4>Expiry</h4>
+            <p id="expiry">00/00</p>
+            <h4>CVV</h4>
+            <p id="cvv-number">000</p>
+        </div>
+        <div class="ocard" id="front">
+            <div id="logo"><img src="logo.jpg" alt="company-logo"></div>
+            <h2 id="type">VISA</h2><h2 id="companyName">OPG MEMBERSHIP CARD</h2>
+            <p id="holder">Holder Name:<h3 id="holder-name">user name</h3></p>
+        </div>        
+        </div>        
+    </div>
+    <button id="view" >View Details</button>
+    <button id="check">check Balance</button><br>
+    
+    <a href="DEPOSIT.HTML">Deposit</a>    
+    </section>
+    
+    <footer>
+    <div id="column1">
+    <a href="ABOUT.HTML">About us</a><br>
+    <a href="SETTINGS.HTML">Settings</a>
+    </div>
+    <div id="column4">
+    <li>P.O.BOX 281</li>
+    <li>Malakisi</li>
+    <li>Nairobi-kenya</li>    
+    </div>
+    <div id="column2">
+    <h4>Created By </h4>
+    <p id="creator">Outcast DHO</p>
+    <P id="rights">All Rights Reserved</P>
+    <p id="copy">Copyright #&copy;</p>
+    </div>
+    <div id="column3">
+    <li><a href="#">x</a></li>    
+    <li><a href="#">Facebook</a></li>    
+    <li><a href="#">Instagram</a></li>    
+    <li><a href="#">LinkedIn</a></li>    
+    <li><a href="#">Whatsapp</a></li>    
+    <li><a href="#">Telegram</a></li>    
+    <li><a href="#">Pinterest</a></li>    
+    <li><a href="#">GitHub</a></li>    
+    </div>
+    </footer>
+    
+    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";    
+    import { getAuth,onAuthStateChanged,signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+    import { getFirestore, limit,collection,query, doc,addDoc ,setDoc, getDoc,getDocs } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js"
+    
+    const firebaseConfig = {
+        apiKey: "AIzaSyC6h2xegIwjeAHQVsPNyD-LI5JvBgrmS-c",
+        authDomain: "auction-8a92a.firebaseapp.com",
+        projectId: "auction-8a92a",
+        storageBucket: "auction-8a92a.firebasestorage.app",
+        messagingSenderId: "414092650508",
+        appId: "1:414092650508:web:87420c9788157020262629"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+
+    const db = getFirestore(app); 
+    const auth = getAuth(app);   
+    window.db=db;
+    
+    
+
+
+function generateRandomDigits(length = 8) {
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += Math.floor(Math.random() * 9) + 1;
+    }
+    return result;
+}
+
+function generateCvv() {
+    return Math.floor(100 + Math.random() * 900).toString(); 
+}
+
+function generateRandomExpiration(maxYearsInFuture = 5) {
+    const now = new Date();
+    const randomYear = (now.getFullYear() + Math.floor(Math.random() * maxYearsInFuture)).toString().slice(-2);
+    const randomMonth = (Math.floor(Math.random() * 12) + 1 || -1).toString().padStart(2, '0');
+    return { month: randomMonth, year: randomYear };
+}
+
+async function createCardDetails(userId) {
+    if (!userId) return;
+
+    const modalElement = document.getElementById("card-creation");
+    const cardRef = doc(db, "cards", userId);
+    const detailsRef = doc(db, "users", userId);
+
+    
+    try {
+        const cardSnap = await getDoc(cardRef);
+        const users=await getDoc(detailsRef);
+        
+        if (!cardSnap.exists()) {
+            const expiry = generateRandomExpiration();
+            const record=users.data();
+            const newCardData = {
+                cardnumber: generateRandomDigits(8),
+                cvv: generateCvv(),
+                expiry: `${expiry.month}/${expiry.year}`,
+                holdername:record.Username ||"N/A",
+                createdAt: new Date()
+            };
+
+            await setDoc(cardRef, newCardData);
+            console.log("Card created successfully.");
+            
+            if (modalElement) modalElement.style.display = "none";
+            alert("Congratulations! Your O-Card has been created.");
+            
+            displayCardDetails(userId);
+        } else {
+            if (modalElement) modalElement.style.display = "none";
+        }
+    } catch (e) {
+        console.error("Error creating card:", e);
+        alert("Error creating card. Check console.");
+    }
+}
+
+async function displayCardDetails(userId) {
+    const cardNumber = document.getElementById("card-number");
+    const cardName = document.getElementById("holder-name");
+    const cvv = document.getElementById("cvv-number");
+    const expiry = document.getElementById("expiry");
+
+    if (!userId) {
+        if (cardNumber) cardNumber.textContent = "**** **** ****";
+        return;
+    }
+
+    try {
+        const cardSnap = await getDoc(doc(db, "cards", userId));
+        if (cardSnap.exists()) {
+            const data = cardSnap.data();
+            
+            if (cardNumber) cardNumber.textContent = data.cardnumber.replace(/(\d{4})/g, '$1 ').trim();
+            if (cardName) cardName.textContent = data.holdername;
+            if (cvv) cvv.textContent = data.cvv;
+            if (expiry) expiry.textContent = data.expiry;
+        }
+    } catch (e) {
+        console.error("Error displaying card:", e);
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const cardContainer = document.getElementById("myCardCont");
+    const viewBtn = document.getElementById("view");
+    const createBtn = document.getElementById("create");
+    const modalElement = document.getElementById("card-creation");
+    
+    if (viewBtn && cardContainer) {
+        viewBtn.addEventListener("click", () => {
+            cardContainer.classList.toggle('is-flipped');
+            viewBtn.textContent = cardContainer.classList.contains('is-flipped') ? "Hide Details" : "View Details";
+        });
+    }
+
+    if (createBtn) {
+        createBtn.addEventListener("click", () => {
+            const user = auth.currentUser;
+            if (user) {
+                createCardDetails(user.uid);
+            } else {
+                alert("Please log in first.");
+            }
+        });
+    }
+    
+    if (modalElement) {
+        modalElement.addEventListener("click", (e) => {
+            if (e.target === modalElement) {
+                modalElement.style.display = "none";
+            }
+        });
+    }
+});
+
+
+
+onAuthStateChanged(auth, async (user) => {
+    const signInDiv = document.getElementById("signIn");
+    const profileImage = document.getElementById("accountImage");
+    const modalElement = document.getElementById("card-creation");
+
+    if (user) {
+        console.log("Session Active:", user.uid);
+        if (signInDiv) signInDiv.style.display = "none";
+        if (profileImage) profileImage.style.display = "block";
+        
+        try {
+            const userSnap = await getDoc(doc(db, "users", user.uid));
+            if (userSnap.exists()) {
+                const userData = userSnap.data();
+                if (profileImage) {
+                    profileImage.innerHTML = `<img src="${userData.ProfilePhoto || 'image4.jpg'}" alt="">`;
+                }
+            }
+        } catch (e) {
+            console.error("Profile Fetch Error:", e);
+        }
+        
+        const cardSnap = await getDoc(doc(db, "cards", user.uid));
+        if (cardSnap.exists()) {
+            if (modalElement) modalElement.style.display = "none";
+            displayCardDetails(user.uid);
+        } else {
+            
+            if (modalElement) modalElement.style.display = "flex"; 
+        }
+
+    } else {
+        console.log("No active session.");
+        if (signInDiv) signInDiv.style.display = "block";
+        if (profileImage) profileImage.style.display = "none";
+        if (modalElement) modalElement.style.display = "none";
+        displayCardDetails(null);
+    }
+});
+    
+    
+    
+    
+    
+    
+    
+    </script>
+</body>
+</html>

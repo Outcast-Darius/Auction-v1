@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>homepage</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+    <header>
+    <nav>
+    
+    <li><a href="index.html">Home</a></li>
+    <li><a href="AUCTION.HTML">Auction</a></li>
+    <li id="reports"><a href="REPORTS.HTML">Reports</a></li>
+    <li><a href="ADVERTISE.HTML">Advertise</a></li>
+    <!--<li><a href="BID.HTML">Bids</a></li>-->
+    
+    </nav>
+    
+    <div id="sign">
+    <a href="PROFILE.HTML"><div id="accountImage"><!-- profile image--> </div></a>
+    <button id="signIn"><a href="LOGIN.HTML">Sign In</a></button>
+    </div>    
+    </header>
+    
+    <section id="home-menu">
+        <div class="container" id="image-container">
+            <img src="" alt="">
+            
+        </div>
+        <div class="ourServices">
+            <div class="whoWeAre">
+                <h2>Who We Are</h2>
+                <p><b>OPG BIDDING</b> is an online platform that connects sellers and buyers through auctions. Our mission is to provide a seamless and secure environment for users to trade goods and services, ensuring transparency and fairness in every bid.</p>
+                
+            </div>
+            <div class="whatWeDo">
+                <h2>What We Do</h2>
+                <p>We offer you a platform where you can advertise your products and services and select the highest bidder and at the same time bid for products that you need.</p>
+                
+            </div>
+        </div>
+        <div class="step1">
+            <h3 id="steps">Be done on OPG with the following steps</h3>
+            <div class="first-step">
+                <h4>Create Account</h4>
+                <ol>
+                <li>Click on Sign Up button</li>
+                <li>Fill in the required details</li>
+                <li>Click create Account to complete</li>
+                </ol>
+                <img src="" alt="">
+            </div>
+        </div>
+        <div class="step2">
+            <div class="signin">
+                <h4>Log In</h4>
+                <ol>
+                <li>Click <b>Sign in</b> button on top right conner</li>
+                <li>Enter your <b>username</b> and <b>password</b></li>
+                <li>Click on <b>Sign In</b> to access your account</li>
+                </ol>
+                
+            </div>
+            <div class="post">
+                <h4>Post Your Product</h4>
+                <ol>
+                <li>After successful log in, navigate to <b>Advertise</b> </li>
+                <li>Fill in details of your item or service</li>
+                <li>Click on <b>Advertise </b>button to post your product</li>
+                <li>Navigate to <b>Bidders</b> section to see bidders</li>
+                </ol>
+                
+            </div>
+            <div class="place-bid">
+                <h4>Place your Bid</h4>
+                <ol>
+                <li>Navigate to <b>Auction</b> section</li>
+                <li>Choose the item you want to bid on</li>
+                <li>Bid the highest</li>
+                <li>Pay for your <b>bid</b> when you are the highest bidder accoding to the auctioner</li>
+                <li>Get the item or service you paid for</li>
+                </ol>
+                
+            </div>
+        </div>
+        <div class="step3">
+            <div class="winandwin">
+                <h4>Win & Win</h4>
+                    <ol>
+                    <li>If you are the highest bidder, you win the bid.</li>
+                    <li>If you are the auctioner, you get to sell your item or service at highest possible price.                    
+                    <li>Enjoy using our platform, <br><b>Remember </b>You only pay if you are the highest bidder.<b>Happy Bidding!</b></li>
+                    </ol>
+            </div>
+        </div>
+        
+    </section>
+    
+    
+    <footer>
+    <div id="column1">
+    <a href="ABOUT.HTML">About us</a><br>
+    <a href="SETTINGS.HTML">Settings</a>
+    </div>
+    <div id="column4">
+    <ul>
+    <li>P.O.BOX 281</li>
+    <li>Malakisi</li>
+    <li>Nairobi-kenya</li>    
+    </ul>
+    </div>
+    <div id="column2">
+    <h4>Created By </h4>
+    <p id="creator">Outcast DHO</p>
+    <P id="rights">All Rights Reserved</P>
+    <p id="copy">Copyright &copy;</p>
+    </div>
+    <div id="column3">
+    <ul>
+    <li><a href="#" title="view twitter page">x</a></li>    
+    <li><a href="#" title="view facebook page">Facebook</a></li>    
+    <li><a href="#" title="view instagram page">Instagram</a></li>    
+    <li><a href="#" title="view linkedIn page">LinkedIn</a></li>    
+    <li><a href="#" title="chat with us on whatsapp">Whatsapp</a></li>    
+    <li><a href="#" title="view telegram page">Telegram</a></li>    
+    <li><a href="#" title="view Pinterest page">Pinterest</a></li>    
+    <li><a href="#" title="view Github page">GitHub</a></li>    
+    </ul>
+    </div>
+    </footer>
+    
+    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";    
+    import { getAuth,onAuthStateChanged,signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+    import { getFirestore, collection, doc, setDoc, getDocs,addDoc,getDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js"
+    
+    const firebaseConfig = {
+        apiKey: "AIzaSyC6h2xegIwjeAHQVsPNyD-LI5JvBgrmS-c",
+        authDomain: "auction-8a92a.firebaseapp.com",
+        projectId: "auction-8a92a",
+        storageBucket: "auction-8a92a.firebasestorage.app",
+        messagingSenderId: "414092650508",
+        appId: "1:414092650508:web:87420c9788157020262629"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+
+    const db = getFirestore(app); 
+    const auth = getAuth(app);   
+    window.db=db;
+    
+    onAuthStateChanged(auth, async(user)=>{
+        const signInDiv=document.getElementById("signIn");
+        const profileImage=document.getElementById("accountImage");
+        
+        if(user){
+            console.log("User is signed in:",user.uid);
+            profileImage.style.display="block";
+            if(signInDiv){
+                signInDiv.style.display="none";
+                
+            }
+            
+        try{    
+            const userRef=doc(db,"users",user.uid);
+            const userSnap=await getDoc(userRef);
+            
+            if(userSnap.exists()){
+                const userData=userSnap.data();
+                if(profileImage){
+                    profileImage.innerHTML=`<img src="${userData.ProfilePhoto || 'image4.jpg' }" alt="" >`;
+                }
+            else{
+                console.log("No user Photo found");
+            }
+            }}
+        catch(e){
+            console.error("Error fetching user data:", e);
+        }    
+        }else{
+            console.log("No user is signed in.");
+            if(signInDiv){
+                signInDiv.style.display="block";
+                profileImage.style.display="none";
+            }
+        }   
+            
+            
+    });
+    
+    </script>
+    
+</body>
+</html>

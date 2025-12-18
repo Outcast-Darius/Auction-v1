@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>advertise</title>
+
+<link rel="stylesheet" href="style.css">
+<script type="module" src="https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js"></script>
+<script type="module" src="https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js"></script>
+<script type="module" src="https://www.gstatic.com/firebasejs/12.6.0/firebase-storage.js"></script>
+
+</head>
+<body>
+    <header>
+    <button id="menu-btn">&#9776;</button>
+    <nav>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="AUCTION.HTML">Auction</a></li>
+    <li id="reports"><a href="REPORTS.HTML">Reports</a></li>
+    <!--<li><a href="BIDDERS.HTML">Bidders</a></li>
+    <li><a href="BID.HTML">Bids</a></li>-->
+    </nav>
+    
+    <div id="sign">
+    <a href="PROFILE.HTML"><div id="accountImage"><!-- profile image--> </div></a>
+    <button id="signIn"><a href="LOGIN.HTML">Sign In</a></button>
+    </div>    
+    </header>
+        
+    <section class="advertise-window">    
+    <div class="sidebar" id="sidebar">
+        <h1> Menu</h1>
+        <ul>
+            <li><a href="ADVERTISE.HTML">Advertise</a></li>
+            <li><a href="MYADVERT.HTML">My_Advert</a></li>
+            <li><a href="BIDDERS.HTML">Bidders</a></li>
+            
+        </ul>
+    </div>
+    
+    <div class="advertise" id="biddersrank"><!-- bidders ranking will be shown here-->
+        <form action="" id="advertiseForm">
+        <div id="ItemImage">Item Image</div>
+        <fieldset>
+            <legend>Item Name<sup>*</sup> </legend>
+            <input type="text" placeholder="your item" name="ItemName" id="item">
+        </fieldset>
+        <fieldset>
+            <legend>Closing Date<sup>*</sup></legend>
+            <input type="date" placeholder="closing date" name="closedate" id="CloseDate">
+        </fieldset>
+        <fieldset>
+            <legend>Lowest Bidding Price<sup>*</sup></legend>
+            <input type="text" placeholder="lowest bidding price e.g 1000 " name="LBP" id="ItemLBP">
+        </fieldset>
+        <fieldset>
+        <legend>Item Photo<sup>*</sup></legend>
+            <input type="file" name="itemPhoto" accept="image/*" id="ItemPhoto">
+            
+        </fieldset>
+        <fieldset>
+            <legend>Description</legend>
+            <textarea id="ItemDescription" rows="5" cols="30" placeholder="Describe your product with maximum of 12 words"></textarea>
+        </fieldset>
+        
+        <button id="post-advert">Advertise</button>
+        
+        </form>
+    </div>
+    
+    </section>
+    
+    <footer>
+    <div id="column1">
+    <a href="ABOUT.HTML">About us</a><br>
+    <a href="SETTINGS.HTML">Settings</a>
+    </div>
+    <div id="column4">
+    <li>P.O.BOX 281</li>
+    <li>Malakisi</li>
+    <li>Nairobi-kenya</li>    
+    </div>
+    <div id="column2">
+    <h4>Created By </h4>
+    <p id="creator">Outcast DHO</p>
+    <P id="rights">All Rights Reserved</P>
+    <p id="copy">Copyright &copy;</p>
+    </div>
+    <div id="column3">
+    <li><a href="#">x</a></li>    
+    <li><a href="#">Facebook</a></li>    
+    <li><a href="#">Instagram</a></li>    
+    <li><a href="#">LinkedIn</a></li>    
+    <li><a href="#">Whatsapp</a></li>    
+    <li><a href="#">Telegram</a></li>    
+    <li><a href="#">Pinterest</a></li>    
+    <li><a href="#">GitHub</a></li>    
+    </div>
+    </footer>
+    
+    <script type="module" src="https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/12.6.0/firebase-storage.js"></script>
+    
+    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";    
+    import { getAuth,onAuthStateChanged,signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+    import { getFirestore,collection, doc, setDoc, getDocs,getDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js"
+    import { getStorage,ref,getDownloadURL,uploadBytes } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-storage.js"
+    
+    const firebaseConfig = {
+        apiKey: "AIzaSyC6h2xegIwjeAHQVsPNyD-LI5JvBgrmS-c",
+        authDomain: "auction-8a92a.firebaseapp.com",
+        projectId: "auction-8a92a",
+        storageBucket: "auction-8a92a.firebasestorage.app",
+        messagingSenderId: "414092650508",
+        appId: "1:414092650508:web:87420c9788157020262629"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+
+    const db = getFirestore(app); 
+    const auth = getAuth(app);   
+    window.db=db;
+    
+
+    async function postAdvert(userID) {    
+    if (!userID) {
+        alert("Authentication error: Please log in again.");
+        return;
+    }
+    
+    const itemName = document.getElementById('item').value;
+    const closeDate = document.getElementById('CloseDate').value;
+    const itemLBP = document.getElementById('ItemLBP').value;
+    const ItemImage = document.getElementById('ItemPhoto');
+    const itemDescription = document.getElementById('ItemDescription').value.trim();
+    
+   // const imageFile = ItemImage.files[0];
+    let photoURL = '';
+    
+    
+    
+    try {
+       const poster=await getDoc(doc(db,"users",userID));
+       const users=poster.data();
+       
+        const advertData = {  
+            ItemName: itemName,            
+            ClosingDate: closeDate, 
+            PostedDate: new Date(),
+            LBP: parseFloat(itemLBP),
+            Description: itemDescription,
+            AuctioneerId: userID, 
+            Auctioneer: users.Username, 
+            Photo: "",
+            Status: "pending"
+        };
+        
+        
+        await Promise.all ([setDoc(doc(db, "adverts", itemName), advertData), 
+        setDoc(doc(db, "items", itemName), advertData) 
+        ]);
+        
+        alert("Advert Posted Successfully");
+        window.location.href="MYADVERT.HTML";
+            
+    } catch(e) {
+        console.error("Error adding document or uploading image: ", e);
+        alert(`Failed to post advert: ${e.message}`);
+        throw e;
+    }
+    }
+    onAuthStateChanged(auth, async(user) => {
+    const profileImage = document.getElementById("accountImage");  
+    const signIn = document.getElementById("signIn");    
+    const sidebar=document.getElementById("sidebar")    
+    const advert=document.getElementById("biddersrank")    
+        
+        
+    if (user) {
+        profileImage.style.display="block";  
+        signIn.style.display="none";
+        
+        const userRef=doc(db,"users",user.uid);
+        const userSnap=await getDoc(userRef);
+        if(userSnap.exists()){
+        const userdata=userSnap.data();
+        profileImage.innerHTML=`<img src="${ 'image4.jpg' || userData.ProfilePhoto}" alt="">`;
+        
+        }
+        
+        const postButton = document.getElementById("post-advert");
+        if (postButton) {
+            postButton.addEventListener("click", (e) => {
+                e.preventDefault();
+                
+                const name=document.getElementById("item").value;
+                const photo=document.getElementById("ItemPhoto").value; 
+                const date=document.getElementById("CloseDate").value;
+                const low=document.getElementById("ItemLBP").value;
+                
+                if (name &&  date && low) {
+                    postAdvert(user.uid); 
+                } else {
+                    alert("Please fill in all the required fields.");
+                }
+            });
+        }
+        try { 
+            const userRef = doc(db, "users", user.uid);
+            const userSnap = await getDoc(userRef); 
+            
+        }
+        catch(e) {
+            console.error("Error fetching user data:", e);
+        }
+        
+    } else {
+        profileImage.style.display="none";  
+        signIn.style.display="block";
+        sidebar.style.display="none"
+        advert.innerHTML="Please sign in to advertise your product "
+        
+    }
+});
+    function createDropDown() {
+    // Check if it already exists so we don't create it multiple times
+    let menu = document.getElementById("dropDown-menu");
+
+    if (!menu) {
+        menu = document.createElement("div");
+        menu.id = "dropDown-menu";
+        menu.innerHTML = `
+            <ul>
+                <li><a href="ADVERTISE.HTML">Advertise</a></li>
+                <li><a href="MYADVERT.HTML">My Adverts</a></li>
+                <li><a href="BIDDERS.HTML">Bidders</a></li>
+            </ul>
+        `;
+        // Append it to the body or a specific header container
+        document.body.appendChild(menu);
+
+        // HIDE logic: When any link inside this menu is clicked
+        menu.addEventListener("click", (e) => {
+            if (e.target.tagName === 'A') {
+                menu.style.display = "none";
+            }
+        });
+    }
+    return menu;
+}
+
+document.getElementById("menu-btn").addEventListener("click", (e) => {
+    const listitem = createDropDown();
+    
+    // Toggle logic: If it's blocked, hide it. If it's hidden, show it.
+    if (listitem.style.display === "block") {
+        listitem.style.display = "none";
+    } else {
+        listitem.style.display = "block";
+    }
+    
+    // Prevent the click from immediately bubbling up if you add a "click away" listener later
+    e.stopPropagation();
+});
+    
+    
+    
+    
+    
+    </script>
+</body>
+</html>

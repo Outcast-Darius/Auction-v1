@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>sign in/authentication/verification</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+    <main class="main-login">
+    <form action="" method="post" id="login-form"  >
+        <div>
+            <h2>Welcome Back</h2>
+            <p id="text">Fill in your details to continue</p>
+            <fieldset>
+                <legend>Email <sup>*</sup></legend>
+                <input type="email" name="email" placeholder="e.g.outcastdho@gmail.com" id="email">
+            </fieldset>
+            <fieldset>  
+                <legend>Password<sup>*</sup></legend>
+                <input type="password" placeholder="********" minlength="8" maxlength="16" name="password" id="password"><input type="checkbox" id="pass" ondblclick="show()" onclick="if(this.checked){password.type='text'}else{password.type='password'}"> 
+            </fieldset>
+        </div>
+            <p id="forgot"><a href="FORGOT.HTML">forgot password</a></p><br>
+            
+        <button id="login">Sign In</button>
+        
+        <div id="createaccount">
+            <p>Don't have an account? <a href="SIGNUP.HTML">Create Account</a></p>
+            <a href="index.html" id="home">Home</a>
+        </div>
+        
+    </form>
+    
+</main>
+    
+    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";    
+    import { getAuth ,signInWithEmailAndPassword} from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+    import { getFirestore, collection, doc, setDoc, getDocs,query,where } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js"
+    
+    const firebaseConfig = {
+        apiKey: "AIzaSyC6h2xegIwjeAHQVsPNyD-LI5JvBgrmS-c",
+        authDomain: "auction-8a92a.firebaseapp.com",
+        projectId: "auction-8a92a",
+        storageBucket: "auction-8a92a.firebasestorage.app",
+        messagingSenderId: "414092650508",
+        appId: "1:414092650508:web:87420c9788157020262629"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+
+    const db = getFirestore(app); 
+    const auth = getAuth(app);   
+    window.db=db;
+    
+    async function loginUser(){
+        const email=document.getElementById("email").value; 
+        const password=document.getElementById("password").value;
+        
+        if(!email || !password){
+            alert("Please enter your email and password");
+            return;
+        }
+        try{
+            const userCredentil=await signInWithEmailAndPassword(auth,email,password);
+            const user=userCredentil.user;
+            
+            console.log("User logged in:",user.uid);
+            alert("Welcome back to OPG BIDDING. ");
+            window.location.href="index.html";
+        }catch(error){  
+            console.error("Login Error:", error.code, error.message);
+            
+            let errorMessage = "Login failed. Please check your details.";
+            
+        switch (error.code) {
+            case 'auth/invalid-credential': 
+                
+                errorMessage = "Incorrect email or password.";
+                break;
+            case 'auth/user-not-found':
+                errorMessage = "No account found with this email.";
+                break;
+            case 'auth/wrong-password':
+                errorMessage = "Incorrect password.";
+                break;
+            case 'auth/too-many-requests':
+                errorMessage = "Too many failed attempts. Please try again later.";
+                break;
+        }
+        
+        alert(errorMessage);
+        }
+        }
+        
+        document.getElementById("login").addEventListener("click",(e)=>{
+            e.preventDefault();
+            loginUser();
+        });
+        
+        
+        
+        
+        
+    </script>
+</body>
+</html>

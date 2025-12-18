@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>bidders</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+    <header>
+    <button id="menu-btn">&#9776;</button>
+    <nav>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="AUCTION.HTML">Auction</a></li>
+    <li id="reports"><a href="REPORTS.HTML">Reports</a></li>
+    <!--<li><a href="BIDDERS.HTML">Bidders</a></li>
+    <li><a href="BID.HTML">Bids</a></li>-->
+    </nav>
+    
+    <div id="sign">
+    <a href="PROFILE.HTML"><div id="accountImage"><!-- profile image--> </div></a>
+    <button id="signIn"><a href="LOGIN.HTML">Sign In</a></button>
+    </div>    
+    </header>
+        
+    <section class="bidders-window">    
+    <div class="sidebar" id="sidebar">
+        <h1>Menu</h1>
+        <ul>
+            <li><a href="ADVERTISE.HTML">Advertise</a></li>
+            <li><a href="MYADVERT.HTML">My_Advert</a></li>
+            <li><a href="BIDDERS.HTML">Bidders</a></li>
+            
+        </ul>
+        
+    </div>
+    
+    <div class="bidders" id="biddersrank"><!-- bidders ranking will be shown here-->
+    <div class="biddersTable" id="biddersTable">
+    <!-- table will be created here -->
+    </div>
+    
+    </div>
+    
+    </section>
+    
+    <footer>
+    <div id="column1">
+    <a href="ABOUT.HTML">About us</a><br>
+    <a href="SETTINGS.HTML">Settings</a>
+    </div>
+    <div id="column4">
+    <li>P.O.BOX 281</li>
+    <li>Malakisi</li>
+    <li>Nairobi-kenya</li>    
+    </div>
+    <div id="column2">
+    <h4>Created By </h4>
+    <p id="creator">Outcast DHO</p>
+    <P id="rights">All Rights Reserved</P>
+    <p id="copy">Copyright &copy;</p>
+    </div>
+    <div id="column3">
+    <li><a href="#">x</a></li>    
+    <li><a href="#">Facebook</a></li>    
+    <li><a href="#">Instagram</a></li>    
+    <li><a href="#">LinkedIn</a></li>    
+    <li><a href="#">Whatsapp</a></li>    
+    <li><a href="#">Telegram</a></li>    
+    <li><a href="#">Pinterest</a></li>    
+    <li><a href="#">GitHub</a></li>    
+    </div>
+    </footer>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";    
+    import { getAuth,onAuthStateChanged,signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+    import { getFirestore, collection,runTransaction ,doc, setDoc, getDocs,where,query,orderBy,getDoc,updateDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js"
+    
+    const firebaseConfig = {
+        apiKey: "AIzaSyC6h2xegIwjeAHQVsPNyD-LI5JvBgrmS-c",
+        authDomain: "auction-8a92a.firebaseapp.com",
+        projectId: "auction-8a92a",
+        storageBucket: "auction-8a92a.firebasestorage.app",
+        messagingSenderId: "414092650508",
+        appId: "1:414092650508:web:87420c9788157020262629"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+
+    const db = getFirestore(app); 
+    const auth = getAuth(app);   
+    window.db=db;
+    
+    async function getBiddersRank(currentUserId) {
+        
+        const biddersTableDiv = document.getElementById("biddersTable");
+        if(!biddersTableDiv)return;
+        biddersTableDiv.innerHTML="Finding Bidders for your adverts";
+            
+                    let tableHTML = `
+            <table>
+                <caption><h2>BIDDERS</h2></caption>
+                <tr>
+                    <th>#</th>
+                    <th>Bidder Name</th>
+                    <th>Item Name</th>
+                    <th>Bid Price</th>
+                    <th>Bid Date</th>
+                </tr>
+        `;
+                
+                
+        let rank = 1;
+            
+        try{
+        const biddersCollectionRef = collection(db, "bidders"); 
+        const q=query(
+            collection(db,"bidders"),
+            where("AuctioneerUID","==",currentUserId),
+            orderBy("BidDate","desc")
+        );
+        const querySnapshot=await getDocs(q);
+        if(querySnapshot.empty){
+            biddersTableDiv.innerHTML="No one has placed bid for your advert yet";
+            
+        return;
+        }
+        
+        
+
+        querySnapshot.forEach((doc) => {
+            const bidderData = doc.data();
+            const bidId=doc.id;
+            if(bidderData.status==="won"){
+            
+            return;
+            }
+            
+            const bidderdate=bidderData.BidDate.toDate().toLocaleDateString(
+            
+            
+                'en-US',{
+                    year:'numeric',
+                    month:'long',
+                    day:'numeric',
+            
+            });
+           // const itemID = bidderData.itemId || bidderData.itemID ||randomId|| "";
+            
+            tableHTML += `
+                <tr>
+                    <td>${rank}</td>
+                    <td>${bidderData.BidderName}</td>
+                    <td>${bidderData.ItemName}</td>
+                    <td>${bidderData.BidPrice}</td>
+                    <td>${bidderdate}</td>
+                    <td><button class="status-btn win" id="win" title="Accept Bid" data-bid-id=${bidId} data-item-id=${bidderData.ItemName}>Accept</button><button class="status-btn lost" title="Decline Bid" id="lost" data-bid-id=${bidId} data-item-id=${bidderData.ItemName}>Decline </button></td>
+                </tr>
+            `;
+            rank++;
+        });
+
+        tableHTML += `</table>`;
+        biddersTableDiv.innerHTML = tableHTML;
+        }
+        catch(e){
+        console.log("Error filtering bidders:",e);
+        biddersTableDiv.innerHTML="Error loading your advert bidders";
+        }
+    };
+    document.getElementById('biddersTable').addEventListener('click', async (e) => {    
+    if (e.target.classList.contains('status-btn')) {        
+        const isWin=e.target.classList.contains('win'); 
+        //const isDecline=e.target.classList.contains('lost'); 
+        const bidId = e.target.getAttribute('data-bid-id'); 
+        const itemName = e.target.getAttribute('data-item-id');
+        const newStatus=isWin?"won":"lost";
+        console.log("Attempting to update Bid ID:", `|${bidId}|`); // The pipes || help spot hidden spaces or quotes
+        console.log("Attempting to update Item ID:", `|${itemName}|`);
+        
+        if(!bidId || !itemName){
+        console.error("Missing Bid id or item id");
+        return;
+        }
+        
+        try {
+            const docRef = doc(db, "bidders", bidId);
+            const itemsQuery=query(collection(db,"items"),where("ItemName","==",itemName));
+            const historyQuery=query(collection(db,"history"),where("ItemName","==",itemName || "ItemName","==",bidId));
+            
+            const [itemsSnap, historySnap] = await Promise.all([
+                getDocs(itemsQuery),
+                getDocs(historyQuery)
+            ]);
+                        
+            const updates = [];            
+            updates.push(updateDoc(docRef, { Status: newStatus }));
+            
+            itemsSnap.forEach((doc) => {
+                updates.push(updateDoc(doc.ref, { Status: newStatus }));
+            });
+
+            historySnap.forEach((doc) => {
+                updates.push(updateDoc(doc.ref, { Status: newStatus }));
+            });
+            
+            if (updates.length > 0) {
+                await Promise.all(updates);
+                alert(`Successfully marked ${itemName} as ${newStatus.toUpperCase()}`);
+                
+                // Refresh the table
+                const user = auth.currentUser;
+                if (user) getBiddersRank(user.uid);
+            } else {
+                console.warn("No documents found to update for:", itemName);
+            }
+            
+        } catch (err) {
+            console.error("Update failed", err);
+        }
+    
+    }});
+    
+    
+    
+    onAuthStateChanged(auth, async(user)=>{
+        const signInDiv=document.getElementById("signIn");
+        const profileImage=document.getElementById("accountImage");
+        const bidders=document.getElementById("biddersTable");
+        const sidebar=document.getElementById("sidebar")
+        
+        if(user){
+            console.log("User is signed in:",user.uid);
+            profileImage.style.display="block";
+            if(signInDiv){
+                signInDiv.style.display="none";
+            }
+            getBiddersRank(user.uid);
+        try{    
+            const userRef=doc(db,"users",user.uid);
+            const userSnap=await getDoc(userRef);
+            
+            if(userSnap.exists()){
+                const userData=userSnap.data();
+                if(profileImage){
+                    profileImage.innerHTML=`<img src="${userData.ProfilePhoto || 'image4.jpg'}" alt="" >`;
+                }
+            else{
+                console.log("No user Photo found");
+            }
+            }}
+        catch(e){
+            console.error("Error fetching user data:", e);
+        }    
+        }else{
+            console.log("No user is signed in.");
+            bidders.innerHTML="Sign in to view bidders of your products";
+            sidebar.style.display="none";
+            if(signInDiv){
+                signInDiv.style.display="block";
+                profileImage.style.display="none";
+            }
+        }   
+            
+            
+    });
+    
+    function createDropDown() {    
+    let menu = document.getElementById("dropDown-menu");
+
+    if (!menu) {
+        menu = document.createElement("div");
+        menu.id = "dropDown-menu";
+        menu.innerHTML = `
+            <ul>
+                <li><a href="ADVERTISE.HTML">Advertise</a></li>
+                <li><a href="MYADVERT.HTML">My Adverts</a></li>
+                <li><a href="BIDDERS.HTML">Bidders</a></li>
+            </ul>
+        `;
+        document.body.appendChild(menu);
+        menu.addEventListener("click", (e) => {
+            if (e.target.tagName === 'A') {
+                menu.style.display = "none";
+            }
+        });
+    }
+    return menu;
+}
+
+document.getElementById("menu-btn").addEventListener("click", (e) => {
+    const listitem = createDropDown();
+    
+    if (listitem.style.display === "block") {
+        listitem.style.display = "none";
+    } else {
+        listitem.style.display = "block";
+    }
+    
+    e.stopPropagation();
+});
+    
+    
+    
+    
+    
+    </script>
+</body>
+</html>

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>my adverts</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+    <header>
+    <button id="menu-btn">&#9776;</button>
+    <nav>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="AUCTION.HTML">Auction</a></li>
+    <li id="reports"><a href="REPORTS.HTML">Reports</a></li>
+    <!--<li><a href="BIDDERS.HTML">Bidders</a></li>
+    <li><a href="BID.HTML">Bids</a></li>-->
+    </nav>
+    
+    <div id="sign">
+    <a href="PROFILE.HTML"><div id="accountImage"><!-- profile image--> </div></a>
+    <button id="signIn"><a href="LOGIN.HTML">Sign In</a></button>
+    </div>    
+    </header>
+        
+    <section class="myadvert-window">    
+    <div class="sidebar" id="sidebar">
+        <h1>Menu</h1>
+        <ul>
+            <li><a href="ADVERTISE.HTML">Advertise</a></li>
+            <li><a href="MYADVERT.HTML">My_Advert</a></li>
+            <li><a href="BIDDERS.HTML">Bidders</a></li>
+            
+        </ul>
+        
+    </div>
+    
+    <div class="myadvert" id="myadvert"><!-- bidders ranking will be shown here-->
+    <div class="myad" id="myad"></div>
+    
+    </div>
+    </section>
+    
+    <footer>
+    <div id="column1">
+    <a href="ABOUT.HTML">About us</a><br>
+    <a href="SETTINGS.HTML">Settings</a>
+    </div>
+    <div id="column">
+    <li>P.O.BOX 281</li>
+    <li>Malakisi</li>
+    <li>Nairobi-kenya</li>    
+    </div>
+    <div id="column2">
+    <h4>Created By </h4>
+    <p id="creator">Outcast DHO</p>
+    <P id="rights">All Rights Reserved</P>
+    <p id="copy">Copyright &copy;</p>
+    </div>
+    <div id="column3">
+    <li><a href="#">x</a></li>    
+    <li><a href="#">Facebook</a></li>    
+    <li><a href="#">Instagram</a></li>    
+    <li><a href="#">LinkedIn</a></li>    
+    <li><a href="#">Whatsapp</a></li>    
+    <li><a href="#">Telegram</a></li>    
+    <li><a href="#">Pinterest</a></li>    
+    <li><a href="#">GitHub</a></li>    
+    </div>
+    </footer>
+    
+    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";    
+    import { getAuth,onAuthStateChanged,signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+    import { getFirestore, collection, doc, setDoc, getDocs,query,where,getDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js"
+    
+    const firebaseConfig = {
+        apiKey: "AIzaSyC6h2xegIwjeAHQVsPNyD-LI5JvBgrmS-c",
+        authDomain: "auction-8a92a.firebaseapp.com",
+        projectId: "auction-8a92a",
+        storageBucket: "auction-8a92a.firebasestorage.app",
+        messagingSenderId: "414092650508",
+        appId: "1:414092650508:web:87420c9788157020262629"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+
+    const db = getFirestore(app); 
+    const auth = getAuth(app);   
+    window.db=db;
+    
+    
+
+
+async function getMyAdverts(currentUserId) { 
+    if (!currentUserId) {
+        const myAdvertDiv = document.getElementById("myad");
+        myAdvertDiv.innerHTML = "<p>Please sign in to view your adverts.</p>";
+        return;
+    }
+    
+    const advertsCollectionRef = collection(db, "adverts");
+    
+    const userAdvertsQuery = query(
+        advertsCollectionRef,
+        where("AuctioneerId", "==", currentUserId) 
+    );
+    
+    const myAdvertDiv = document.getElementById("myad");
+    myAdvertDiv.innerHTML = "";
+    
+    try {
+        
+        const querySnapshot = await getDocs(userAdvertsQuery);
+        
+        if (querySnapshot.empty) {
+            myAdvertDiv.innerHTML = "<p>You have not posted any adverts yet.</p>";
+            return;
+        }
+        
+        querySnapshot.forEach((doc) => {
+            const advert = doc.data();
+                        
+            let postedDateDisplay = 'N/A';
+            if (advert.PostedDate && typeof advert.PostedDate.toDate === 'function') {
+                postedDateDisplay = advert.PostedDate.toDate().toLocaleDateString(
+                    'en-US', { year: 'numeric', month: 'long', day: 'numeric' }
+                );
+            }
+            let closingDateDisplay = 'N/A';
+            if (advert.ClosingDate && typeof advert.ClosingDate.toDate === 'function') {
+                closingDateDisplay = advert.ClosingDate.toDate().toLocaleDateString(
+                    'en-US', { year: 'numeric', month: 'long', day: 'numeric' }
+                );
+            }
+
+            
+            const advertElement = document.createElement("div");
+            advertElement.className = "advert-item";
+            
+            advertElement.innerHTML = `
+                <div id="advert" class="advert">
+                    <img src="${advert.Photo || 'image3.jpg' }" alt="${advert.ItemName} image">
+                    <h4>${advert.ItemName}</h4>
+                    <p><span id="posted">Posted :</span> ${postedDateDisplay}</p>
+                    <p><span id="closing">Closing :</span> ${advert.ClosingDate||closingDateDisplay }</p>
+                    <p><span id="lbp"  >Lowest Bid:</span> ksh ${advert.LBP}</p>
+                    
+                </div>`;
+            
+            myAdvertDiv.prepend(advertElement);
+        });
+    } catch (error) {
+        console.error("Error fetching adverts: ", error);
+        myAdvertDiv.innerHTML = `<p>Error loading adverts. Please try again. (${error.message})</p>`;
+        throw error;
+    }
+}
+
+
+onAuthStateChanged(auth, async(user) => {
+    
+    const profileImage=document.getElementById("accountImage")
+    const sign=document.getElementById("signIn")
+    const sidebar=document.getElementById("sidebar")
+    
+    if (user) {
+        console.log("User is signed in:", user.uid);
+        
+        getMyAdverts(user.uid); 
+        
+        try { 
+            const userRef = doc(db, "users", user.uid);
+            
+            const userSnap = await getDoc(userRef); 
+            
+            if (userSnap.exists()) {
+                const userData = userSnap.data();
+                if (profileImage) {
+                    profileImage.innerHTML=`<img src="${userData.ProfilePhoto || 'image4.jpg'}" alt="" >`;
+                    const photoUrl = userData.ProfilePhoto || user.photoURL || '';
+                    profileImage.style.display="block";
+                    sign.style.display="none";
+                }
+            } else {
+                console.log("No user profile document found");
+                
+            }
+        }
+        catch(e) {
+            console.error("Error fetching user data:", e);
+        }
+    } else {
+        console.log("No user is signed in.");
+        sidebar.style.display="none";
+        
+        getMyAdverts(null); 
+        
+    }
+});
+
+function createDropDown() {
+    // Check if it already exists so we don't create it multiple times
+    let menu = document.getElementById("dropDown-menu");
+
+    if (!menu) {
+        menu = document.createElement("div");
+        menu.id = "dropDown-menu";
+        menu.innerHTML = `
+            <ul>
+                <li><a href="ADVERTISE.HTML">Advertise</a></li>
+                <li><a href="MYADVERT.HTML">My Adverts</a></li>
+                <li><a href="BIDDERS.HTML">Bidders</a></li>
+            </ul>
+        `;
+        // Append it to the body or a specific header container
+        document.body.appendChild(menu);
+
+        // HIDE logic: When any link inside this menu is clicked
+        menu.addEventListener("click", (e) => {
+            if (e.target.tagName === 'A') {
+                menu.style.display = "none";
+            }
+        });
+    }
+    return menu;
+}
+
+document.getElementById("menu-btn").addEventListener("click", (e) => {
+    const listitem = createDropDown();
+    
+    // Toggle logic: If it's blocked, hide it. If it's hidden, show it.
+    if (listitem.style.display === "block") {
+        listitem.style.display = "none";
+    } else {
+        listitem.style.display = "block";
+    }
+    
+    // Prevent the click from immediately bubbling up if you add a "click away" listener later
+    e.stopPropagation();
+});
+
+
+    
+    
+    
+    
+    
+    
+    </script>
+</body>
+</html>

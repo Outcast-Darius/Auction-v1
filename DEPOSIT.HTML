@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+    <header>
+    <nav>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="AUCTION.HTML">Auction</a></li>
+    <li id="reports"><a href="REPORTS.HTML">Reports</a></li>
+    <li><a href="BIDDERS.HTML">Bidders</a></li>
+    
+    </nav>
+    
+    <div id="sign">
+    <a href="PROFILE.HTML"><div id="accountImage"><!-- profile image--> </div></a>
+    <button id="signIn"><a href="LOGIN.HTML">Sign In</a></button>
+    </div>    
+    </header>
+    
+    <section>
+        <div class="depo-modals">
+            
+            
+        </div>
+    
+        <form action="" method="post">
+            <h2>Deposit mode</h2>
+            <label for="deposit-mode">Deposit</label>
+            <select name="deposit" id="deposit-mode">
+            <option value=""></option>
+            <option value="mpesa">Mpesa</option>
+            <option value="bank">Bank</option>
+            <button id="deposit">Deposit</button>
+            </select>
+        </form>
+    </section>
+    
+    <footer>
+    <div id="column1">
+    <a href="ABOUT.HTML">About us</a><br>
+    <a href="SETTINGS.HTML">Settings</a>
+    </div>
+    <div id="column4">
+    <li>P.O.BOX 281</li>
+    <li>Malakisi</li>
+    <li>Nairobi-kenya</li>    
+    </div>
+    <div id="column2">
+    <h4>Created By </h4>
+    <p id="creator">Outcast DHO</p>
+    <P id="rights">All Rights Reserved</P>
+    <p id="copy">Copyright #&copy;</p>
+    </div>
+    <div id="column3">
+    <li><a href="#">x</a></li>    
+    <li><a href="#">Facebook</a></li>    
+    <li><a href="#">Instagram</a></li>    
+    <li><a href="#">LinkedIn</a></li>    
+    <li><a href="#">Whatsapp</a></li>    
+    <li><a href="#">Telegram</a></li>    
+    <li><a href="#">Pinterest</a></li>    
+    <li><a href="#">GitHub</a></li>    
+    </div>
+    </footer>
+    
+    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";    
+    import { getAuth,onAuthStateChanged,signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+    import { getFirestore, collection, doc, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js"
+    
+    const firebaseConfig = {
+        apiKey: "AIzaSyC6h2xegIwjeAHQVsPNyD-LI5JvBgrmS-c",
+        authDomain: "auction-8a92a.firebaseapp.com",
+        projectId: "auction-8a92a",
+        storageBucket: "auction-8a92a.firebasestorage.app",
+        messagingSenderId: "414092650508",
+        appId: "1:414092650508:web:87420c9788157020262629"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+
+    const db = getFirestore(app); 
+    const auth = getAuth(app);   
+    window.db=db;
+    
+    onAuthStateChanged(auth, async(user)=>{
+        const signInDiv=document.getElementById("signIn");
+        const profileImage=document.getElementById("accountImage");
+        
+        if(user){
+            console.log("User is signed in:",user.uid);
+            profileImage.style.display="block";
+            if(signInDiv){
+                signInDiv.style.display="none";
+                
+            }
+            
+        try{    
+            const userRef=doc(db,"users",user.uid);
+            const userSnap=await getDocs(userRef);
+            
+            if(userSnap.exists()){
+                const userData=userSnap.data();
+                if(profileImage){
+                    profileImage.innerHTML=`<img src="${userData.ProfilePhoto}" alt="Profile Image" >`;
+                }
+            else{
+                console.log("No user Photo found");
+            }
+            }}
+        catch(e){
+            console.error("Error fetching user data:", e);
+        }    
+        }else{
+            console.log("No user is signed in.");
+            if(signInDiv){
+                signInDiv.style.display="block";
+                profileImage.style.display="none";
+            }
+        }   
+            
+            
+    });
+    
+    
+    
+    
+    
+    
+    </script>
+</body>
+</html>

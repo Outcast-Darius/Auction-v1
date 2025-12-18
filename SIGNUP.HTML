@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>create account</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+    <main id="sign-main">
+    <form action="" method="post" id="signup-form">
+    <h2>Sign Up</h2>
+    <fieldset>
+        <legend>Email<sup>*</sup></legend>
+        <input type="email" name="email" placeholder="e.g.outcastdho@gmail.com" id="email">
+    </fieldset>
+    <fieldset>
+        <legend>Phone Number<sup>*</sup></legend>
+        <input type="tel" name="telephone" placeholder="+254 7xxxxxxxx / 07xxxxxxxx" id="phone">
+    </fieldset>
+    <fieldset>
+        <legend>Username<sup>*</sup></legend>
+        <input type="text" name="username" placeholder="e.g.Outcast DHO" id="user">
+    </fieldset>
+    <fieldset>
+        <legend>Password<sup>*</sup></legend>
+        <input type="password" name="password1" placeholder="********" id="password1" minlength="8" maxlength="16"><input type="checkbox" name="pass1" id="pass1" ondblclick="showpas()" onclick="if(this.checked){password1.type='text'}else{password1.type='password'}">
+        <p id="passLength"></p>
+    </fieldset>
+    <fieldset>
+        <legend>Confirm Password<sup>*</sup></legend>
+        <input type="password" name="password2" placeholder="********" id="password2" minlength="8" maxlength="16"><input type="checkbox" name="pass" id="pass" ondblclick="show()" onclick="if(this.checked){password2.type='text'}else{password2.type='password'}">
+        <p id="passValid"></p>
+    </fieldset>
+    
+    <button id="signup">Create Account </button><br><a href="index.html">Home</a><br>
+    <button id="login"><a href="LOGIN.HTML">Sign In</a></button>
+    
+    
+    </form>
+    </main>
+    
+    
+    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";    
+    import { getAuth,createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+    import { getFirestore, collection, doc, setDoc, getDocs,query,where } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js"
+    
+    const firebaseConfig = {
+        apiKey: "AIzaSyC6h2xegIwjeAHQVsPNyD-LI5JvBgrmS-c",
+        authDomain: "auction-8a92a.firebaseapp.com",
+        projectId: "auction-8a92a",
+        storageBucket: "auction-8a92a.firebasestorage.app",
+        messagingSenderId: "414092650508",
+        appId: "1:414092650508:web:87420c9788157020262629"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+
+    const db = getFirestore(app); 
+    const auth = getAuth(app);   
+    window.db=db;
+    
+    const pass1=document.getElementById("password1");
+    pass1.addEventListener("input",function(){
+        const passLength=document.getElementById("passLength");
+        const pass=pass1.value;
+        const hasSpecialChar = /[@#$%*!&]/.test(pass);
+        if(pass.length>=6 && hasSpecialChar){
+            
+            passLength.textContent="strong password";
+            passLength.style.color="green";
+            setTimeout(()=>{
+                passLength.textContent="";
+            },1900);
+        }else{
+            passLength.textContent="weak password try including special characters such as @,#,$,%,*";
+            passLength.style.color="red";
+            
+        }
+    });
+    
+    const pass2=document.getElementById("password2");
+    pass2.addEventListener("input",()=>{
+        const passValid=document.getElementById("passValid");
+        const pass1=document.getElementById("password1").value;
+        const pass=pass2.value;
+        if(!(pass1===pass)){
+            passValid.textContent="Passwords do not Match";
+            passValid.style.color="red";
+        }else{
+            passValid.textContent="";
+        }
+    });
+    
+    async function createAccount(){
+        const email=document.getElementById("email").value;
+        const phone=document.getElementById("phone").value;
+        const username=document.getElementById("user").value;
+        const password=document.getElementById("password2").value;
+        
+        if(!email || !phone || !username || !password){
+            alert("Please fill in all required fields.");
+            return;
+        }
+        if(password.length<6){
+        alert("Password must be at least 6 characters long.");
+        return;
+        }
+        try{
+            const userCredentil=await createUserWithEmailAndPassword(auth,email,password);
+            const user=userCredentil.user;
+            await setDoc(doc(db,"users",user.uid),{
+                Email:email,
+                PhoneNumber:phone,
+                Username:username,
+                UID:user.uid,
+                CreatedAt:new Date()
+            });
+            alert("Account created successfully!");
+            window.location.href="LOGIN.HTML";
+        }
+        catch(error){
+            console.error("Firebase Registration Error:", error.code, error.message);
+            
+            let errorMessage = "Registration failed. Please try again.";
+            
+            switch (error.code) {
+                case 'auth/email-already-in-use':
+                    errorMessage = "This email is already registered.";
+                    break;
+                case 'auth/invalid-email':
+                    errorMessage = "The email address is invalid.";
+                    break;
+                case 'auth/weak-password':
+                    errorMessage = "The password is too weak. Please use a stronger one.";
+                break;
+        }
+        alert(errorMessage);
+            
+        }
+    };
+    
+    document.getElementById("signup").addEventListener("click",(e)=>{
+        e.preventDefault();
+        createAccount();
+    });
+    
+    
+    
+    
+    
+    </script>
+    
+</body>
+</html>

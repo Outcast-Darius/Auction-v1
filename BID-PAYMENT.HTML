@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>bid placement</title>
+
+<link rel="stylesheet" href="style.css">    
+
+</head>
+<body>
+    <section class="payment">
+    <div class="modals">
+        <div class="paymodal" id="mpesa-modal">
+            <form action="" method="post">
+            <h4>mpesa modal </h4>
+                <p id="guide">Enter Phone number for prompt.</p>
+                <fieldset>
+                    <legend>Phone number</legend>
+                        <input type="tel" name="tel" id="phone number">
+                </fieldset>
+                <button id="prompt">Prompt</button>    
+            </form>
+        </div>    
+        <div class="paymodal" id="pin-modal">
+            <form action="" method="post">
+            <h4>mpesa modal </h4>
+                <p id="guide">Enter mpesa pin.</p>
+                <fieldset>
+                    <legend>Pin</legend>
+                        <input type="password" minlength="4" maxlength="4" name="pin" id="pin number">
+                </fieldset>
+                <button id="pay">Pay</button>    
+            </form>
+        </div>    
+        <div class="paymodal" id="card-modal">    
+            <form action="" method="post">
+            <h4>bank account modal </h4>
+                <p id="guide">Card Details.</p>
+                <fieldset>
+                    <legend>card number</legend>
+                        <input type="text" name="card" id="card number">
+                </fieldset>
+                <fieldset>
+                    <legend>Expiry Date</legend>
+                        <input type="date" name="expiry date" id="expiry date">
+                </fieldset>
+                <fieldset>    
+                    <legend>CVV</legend>
+                        <input type="text" maxlength="3" name="cvv" id="cvv">
+                </fieldset>
+                <button id="deduct">Pay</button>    
+            </form>
+        </div>            
+        <div class="paymodal" id="cash-modal">    
+            <form action="" method="post">
+            <h4>cash modal </h4>
+                <p id="guide">Enter receopt number for confirmation.</p>
+                <fieldset>
+                    <legend>Receipt Number</legend>
+                        <input type="text" name="receipt" id="receipt-number">
+                </fieldset>
+                <button id="receipt">Pay</button>    
+            </form>
+        </div>            
+        <div class="paymodal" id="ocard-modal">    
+            <form action="" method="post">
+            <h4>OPG balance modal </h4>
+                <p id="guide">Enter O_Card details.</p>
+                <fieldset>
+                    <legend>O_Card number</legend>
+                        <input type="text" maxlength="6" name="ocard" id="ocard-number">
+                </fieldset>
+                <fieldset>
+                    <legend>CVV</legend>
+                        <input type="text" maxlength="4" id="opgtoken">
+                </fieldset>
+                <button id="paytoken">Pay</button>    
+            </form>
+        </div>            
+    </div>
+    
+    <form action="" method="post">
+        <h2>PLACE BID</h2>
+        <fieldset>
+            <legend>BIDDER NAME</legend>
+                <input readonly  type="text" id="biddername">
+        </fieldset>
+        <fieldset>
+            <legend>BID AMOUNT<sup>*</sup></legend>
+                <input type="text" id="bidamount">
+        </fieldset>
+        <fieldset>
+                <label for="bidmode">Select Mode</label>
+                <select name="mode" id="bidmode">
+                    <option value="">--choose your prefered mode--</option>                
+                    <option value="mpesa">Mpesa</option>                
+                    <option value="card">Visa / Master card</option>                
+                    <option value="cash">Cash</option>                
+                    <option value="ocard">O_Card Balance</option>                
+                </select>                
+        </fieldset>
+        <button id="continue" onclick="showModal()">Proceed</button>                
+    </form>
+    </section>
+    <script>
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";    
+    import { getAuth } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+    import { getFirestore, collection, doc, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js"
+    
+    const firebaseConfig = {
+        apiKey: "AIzaSyC6h2xegIwjeAHQVsPNyD-LI5JvBgrmS-c",
+        authDomain: "auction-8a92a.firebaseapp.com",
+        projectId: "auction-8a92a",
+        storageBucket: "auction-8a92a.firebasestorage.app",
+        messagingSenderId: "414092650508",
+        appId: "1:414092650508:web:87420c9788157020262629"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+
+    const db = getFirestore(app); 
+    const auth = getAuth(app);   
+    window.db=db;
+    
+    
+    
+    </script>
+    
+</body>
+</html>
